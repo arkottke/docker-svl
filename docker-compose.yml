@@ -20,8 +20,8 @@ services:
       cap_add:
         - SYS_PTRACE
       volumes:
-        - ./B04-DY_Lin_2D_Incline_DRM_PML_Boundary_Elastic_Quad4.py:/home/svl/B04-DY_Lin_2D_Incline_DRM_PML_Boundary_Elastic_Quad4.py
-        - ./run_test_B04.sh:/home/svl/run_test_B04.sh
+        - ./extras/B04-DY_Lin_2D_Incline_DRM_PML_Boundary_Elastic_Quad4.py:/home/svl/B04-DY_Lin_2D_Incline_DRM_PML_Boundary_Elastic_Quad4.py
+        - ./extras/run_test_B04.sh:/home/svl/run_test_B04.sh
       entrypoint: /bin/bash run_test_B04.sh
 
 
