@@ -1,0 +1,82 @@
+FROM tacc/tacc-ubuntu18-impi19.0.7-common
+# AS builder
+
+# System dependencies based on https://seismovlab.com/documentation/linkDebian.html
+RUN apt-get update --yes && \
+	apt-get install --yes --no-install-recommends \
+        ca-certificates \
+        vim \
+        git \
+        bash \
+        ssh \
+        wget \
+        gcc \
+        gfortran \
+        g++ \
+        make \
+        bison \
+        flex \
+        metis \
+        python3-numpy \
+        python3-tk \
+        python3-scipy \
+        python3-matplotlib \
+        && \
+    docker-clean
+
+WORKDIR /tmp
+
+# Fix for WARNING: release_mt library was used but no multi-ep feature was enabled. Please use release library instead.
+# https://pm.bsc.es/gitlab/rarias/bscpkgs/-/issues/2
+ENV MPI_THREAD_SPLIT=1
+
+ENV PATH="/opt/intel/impi/2019.7.217/intel64/bin:${PATH}"
+
+# Add a non-root user because MPI complains about root privledges
+RUN groupadd -r svl && useradd -ms /bin/bash -g svl svl
+
+# git clone -b release https://gitlab.com/petsc/petsc.git
+RUN mkdir /tmp/petsc && \
+    wget -qO- https://github.com/petsc/petsc/archive/refs/tags/v3.13.3.tar.gz | \
+        tar -xz --strip-components=1 -C /tmp/petsc && \
+    cd /tmp/petsc && \
+    ./configure \
+        --prefix=/usr/local \
+        --download-fblaslapack \
+        --download-cmake \
+        --download-eigen \
+        --download-metis \
+        --download-parmetis \
+        --download-ptscotch \
+        --download-mumps \
+        --download-scalapack && \
+    make all check && \
+    make install && \
+    rm -rf /tmp/*
+
+RUN cd /tmp && \
+    git clone https://github.com/SeismoVLAB/SVL && \
+    cd SVL/02-Run_Process && \
+    sed -i 's:^EIGEN_DIR =.*:EIGEN_DIR = /usr/local/include/eigen3:' Makefile.mk && \
+    sed -i 's:^PETSC_DIR =.*:PETSC_DIR = /usr/local:' Makefile.mk && \
+    sed -i 's:^MPI_DIR =.*:MPI_DIR = /opt/intel/impi/2019.7.217/intel64/include:' Makefile.mk && \
+    sed -i 's/^MPICC :=.*/MPICC := mpicxx/' Makefile.mk && \
+    sed -i 's/-fopenmp//' Makefile.mk && \
+    make DEBUG=no && \
+    mkdir -p /home/svl/SVL/02-Run_Process && \
+    mv /tmp/SVL/01-Pre_Process /home/svl/SVL/01-Pre_Process && \
+    mv /tmp/SVL/02-Run_Process/SeismoVLAB.exe /home/svl/SVL/02-Run_Process/SeismoVLAB.exe && \
+    ln -s /usr/bin/mpmetis /home/svl/SVL/01-Pre_Process/Metis && \
+    chown svl:svl -R /home/svl
+
+USER svl
+WORKDIR /home/svl
+
+ENV PYTHONPATH=/home/svl/SVL/01-Pre_Process
+ENV PYTHONIOENCODING=utf-8
+ENV MPLBACKEND=Agg
+
+# Import matplotlib the first time to build the font cache.
+RUN python3 -c "import matplotlib.pyplot"
+
+CMD /bin/bash
