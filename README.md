@@ -1,8 +1,6 @@
 # docker-svl
 
-Docker contianer for Seismo-VLAB
-
-Most of the important libraries are installed with the `PETSc` installer
+Docker contianer for Seismo-VLAB using OpenMPI
 
 ## Running code locally
 
@@ -22,10 +20,6 @@ This will start and interactive session and the local `data` directory will be m
 ~/data$ python3 B04-DY_Lin_2D_Incline_DRM_PML_Boundary_Elastic_Quad4.py
 ~/data$ mpirun -np 2 /home/svl/SVL/02-Run_Process/SeismoVLAB.exe -dir '/home/svl/data/Partition' -file 'Performance_B04.1.$.json'
 ```
-Note that currently *does not work*. It reports:
-```
-/opt/intel/impi/2019.7.217/intel64/bin/mpirun: 2: [: unexpected operator
-```
 
 ## Running code on Stampede2
 
@@ -38,18 +32,25 @@ Change to $SCRATCH directory so containers do not go over your $HOME quota
 $ cd $SCRATCH
 
 Pull container
-$ singularity pull docker://arkottke/tacc-svl
+$ singularity pull docker://arkottke/tacc-svl-openmpi
 
 Run container sequentially
-$ ibrun -n 1 singularity run tacc-svl_latest.sif PROBLEM.py
+$ ibrun -n 1 singularity run tacc-svl-openmpi_latest.sif COMMAND
 
 Run container distributed
-$ ibrun singularity run tacc-svl_latest.sif PROBLEM.py
+$ ibrun singularity run tacc-svl-openmpi_latest.sif COMMAND
 ```
 
-For more information on TACC containers see [Containers@TACC](https://containers-at-tacc.readthedocs.io/en/latest/index.html).
+To run `B04-DY_Lin_2D_Incline_DRM_PML_Boundary_Elastic_Quad4.py`
+```
+# Generate the DRM
+c455-022[knl](1010)$ singularity run tacc-svl-openmpi_latest.sif \
+    python3 B04-DY_Lin_2D_Incline_DRM_PML_Boundary_Elastic_Quad4.py
+# Solve the problem
+c455-022[knl](1013)$ singularity run tacc-svl-openmpi_latest.sif \
+    mpirun -np 2 /home/svl/SVL/02-Run_Process/SeismoVLAB.exe \
+        -dir '/scratch/04072/arkottke/svl/Partition' \
+        -file 'Performance_B04.1.$.json'
+```
 
-## Issues
-
-- Why doesn't the petsc build install binaries for mpmetis?
-- There is a change in the variables in future versions of petsc; `PETSC_COMPILER` is renamed
+For more information on TACC containers see [Containers@TACC](https://containers-at-tacc.readthedocs.io/en/latest/index.html) and [TACC Github](https://github.com/TACC/tacc-containers).
