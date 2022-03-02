@@ -8,5 +8,5 @@ test: build
 	docker compose up --remove-orphans test
 
 push: build
-	docker tag tacc-svl arkottke/tacc-svl
-	docker push arkottke/tacc-svl:latest
+	docker tag tacc-svl-openmpi arkottke/tacc-svl-openmpi
+	docker push arkottke/tacc-svl-openmpi:latest
