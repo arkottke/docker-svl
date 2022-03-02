@@ -4,7 +4,7 @@ services:
       image: tacc-svl-${MPI_ARCH}
       build:
         context: .
-        dockerfile: tacc-svl-${MPI_ARCH}
+        dockerfile: Dockerfile
       cap_add:
         - SYS_PTRACE
       stdin_open: true # docker run -i
@@ -16,7 +16,7 @@ services:
       image: tacc-svl-${MPI_ARCH}
       build:
         context: .
-        dockerfile: tacc-svl-${MPI_ARCH}
+        dockerfile: Dockerfile
       cap_add:
         - SYS_PTRACE
       volumes:
