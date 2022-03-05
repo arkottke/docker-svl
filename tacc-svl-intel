@@ -5,24 +5,31 @@ FROM tacc/tacc-ubuntu18-impi19.0.7-common
 RUN apt-get update --yes && \
 	apt-get install --yes --no-install-recommends \
         ca-certificates \
-        vim \
-        git \
         bash \
-        ssh \
-        wget \
-        gcc \
-        gfortran \
-        g++ \
-        make \
         bison \
         flex \
+        g++ \
+        gcc \
+        gfortran \
+        git \
+        grep \
+        make \
         metis \
+        ssh \
+        vim \
+        wget \
         python3-numpy \
         python3-tk \
         python3-scipy \
         python3-matplotlib \
         && \
     docker-clean
+
+# Intel MPI scripts are using /bin/sh, but they should be using /bin/bash
+# https://community.intel.com/t5/Intel-oneAPI-HPC-Toolkit/mpiifort-mpiicc-mpiicpc-script-error/m-p/859230/highlight/true#M1591
+RUN cd /opt/intel/impi/2019.7.217/intel64/bin && \
+    for fn in mpif77 mpif90 mpigcc mpigxx mpiicc mpiicpc mpiifort mpirun mpitune_fast; \
+        do sed -i 's:#!.*:#!/bin/bash:' $fn; done
 
 WORKDIR /tmp
 
@@ -72,6 +79,7 @@ RUN cd /tmp && \
 USER svl
 WORKDIR /home/svl
 
+ENV PATH="/home/svl/SVL/02-Run_Process:${PATH}"
 ENV PYTHONPATH=/home/svl/SVL/01-Pre_Process
 ENV PYTHONIOENCODING=utf-8
 ENV MPLBACKEND=Agg
@@ -80,3 +88,5 @@ ENV MPLBACKEND=Agg
 RUN python3 -c "import matplotlib.pyplot"
 
 CMD /bin/bash
+
+# vim: set ft=dockerfile:

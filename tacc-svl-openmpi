@@ -69,6 +69,7 @@ USER svl
 WORKDIR /home/svl
 
 ENV PYTHONPATH=/home/svl/SVL/01-Pre_Process
+ENV PATH="/home/svl/SVL/02-Run_Process:${PATH}"
 ENV PYTHONIOENCODING=utf-8
 ENV MPLBACKEND=Agg
 
@@ -76,3 +77,5 @@ ENV MPLBACKEND=Agg
 RUN python3 -c "import matplotlib.pyplot"
 
 CMD /bin/bash
+
+# vim: set ft=dockerfile:
