@@ -1,6 +1,6 @@
 # docker-svl
 
-Docker contianer for Seismo-VLAB using OpenMPI
+Docker contianer for Seismo-VLAB using intel
 
 ## Running code locally
 
@@ -32,25 +32,26 @@ Change to $SCRATCH directory so containers do not go over your $HOME quota
 $ cd $SCRATCH
 
 Pull container
-$ singularity pull docker://arkottke/tacc-svl-openmpi
+$ singularity pull docker://arkottke/tacc-svl-intel
 
 Run container sequentially
-$ ibrun -n 1 singularity run tacc-svl-openmpi_latest.sif COMMAND
+$ ibrun -n 1 singularity run tacc-svl-intel_latest.sif COMMAND
 
 Run container distributed
-$ ibrun singularity run tacc-svl-openmpi_latest.sif COMMAND
+$ ibrun singularity run tacc-svl-intel_latest.sif COMMAND
 ```
 
 To run `B04-DY_Lin_2D_Incline_DRM_PML_Boundary_Elastic_Quad4.py`
 ```
 # Generate the DRM
-c455-022[knl](1010)$ singularity run tacc-svl-openmpi_latest.sif \
+c455-022[knl](1010)$ singularity run tacc-svl-intel_latest.sif \
     python3 B04-DY_Lin_2D_Incline_DRM_PML_Boundary_Elastic_Quad4.py
 # Solve the problem
-c455-022[knl](1013)$ singularity run tacc-svl-openmpi_latest.sif \
-    mpirun -np 2 /home/svl/SVL/02-Run_Process/SeismoVLAB.exe \
+c455-022[knl](1013)$ mpirun -np 2 singularity run tacc-svl-intel_latest.sif \
+        /home/svl/SVL/02-Run_Process/SeismoVLAB.exe \
         -dir '/scratch/04072/arkottke/svl/Partition' \
         -file 'Performance_B04.1.$.json'
 ```
+This is using `mpirun` instead of the recommended `ibrun`. Note that *np* is defined in the Python problem description.
 
 For more information on TACC containers see [Containers@TACC](https://containers-at-tacc.readthedocs.io/en/latest/index.html) and [TACC Github](https://github.com/TACC/tacc-containers).
